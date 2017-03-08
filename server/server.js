@@ -4,6 +4,7 @@ var bodyParser = require('body-parser');
 var {mongoose}=require('./db/mongoose');
 var {Todo}=require('./models/todo');
 var {User}=require('./models/user');
+const {ObjectID}=require('mongodb');
 
 var app =express();
 app.use(bodyParser.json());
@@ -17,12 +18,34 @@ app.post('/todos',(req,res)=>{
     res.status(400).send(e);
   })
 });
+
+app.get('/todos/:id',(req,res)=>{
+  var id = req.params.id;
+  if(!ObjectID.isValid(id)){
+    return  res.status(404).send('not a valid id')
+  }
+  Todo.findById(id).then((todo)=>{
+      if(!todo){
+        return res.send(`404 id not found ${todo}`)
+      }
+    res.send({todo});
+  },(e)=>{
+    res.status(404);
+  }).catch((e)=>{
+    res.status(400)
+    console.log('error',res.status());})
+
+});
+
 app.get('/todos',(req,res)=>{
   Todo.find().then((todos)=>{
     res.send({todos});
   },(e)=>{res.status(400).send(e)});
 
 });
+
+
+
 
 app.listen(3000,()=>{
   console.log("server started at 3000");
