@@ -1,6 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+const _ = require('lodash');
 
+const port = process.env.PORT || 3000;
 var {mongoose}=require('./db/mongoose');
 var {Todo}=require('./models/todo');
 var {User}=require('./models/user');
@@ -13,6 +15,16 @@ app.post('/todos',(req,res)=>{
     text:req.body.text
   });
   todo.save().then((doc)=>{
+    res.send(doc);
+  },(e)=>{
+    res.status(400).send(e);
+  })
+});
+
+app.post('/users',(req,res)=>{
+  var body= _.pick(req.body,['email','password'])
+  var users = new User(body);
+  users.save().then((doc)=>{
     res.send(doc);
   },(e)=>{
     res.status(400).send(e);
@@ -36,6 +48,24 @@ app.get('/todos/:id',(req,res)=>{
     console.log('error',res.status());})
 
 });
+app.delete('/todos/:id',(req,res)=>{
+  var id = req.params.id;
+  if(!ObjectID.isValid(id)){
+    return res.status(404).send();
+
+  }
+  Todo.findByIdAndRemove(id).then((todo)=>{
+    if(!todo){
+      return res.status(404).send();
+    }
+    res.send(todo);
+  }).catch((e)=>{
+    res.status(400).send();
+  });
+
+
+});
+
 
 app.get('/todos',(req,res)=>{
   Todo.find().then((todos)=>{
@@ -47,8 +77,8 @@ app.get('/todos',(req,res)=>{
 
 
 
-app.listen(3000,()=>{
-  console.log("server started at 3000");
+app.listen(port,()=>{
+  console.log(`server started at ${port}`);
 })
 module.exports = {app};
 
