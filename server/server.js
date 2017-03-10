@@ -31,6 +31,10 @@ app.post('/users',(req,res)=>{
   })
 });
 
+app.get('/',(req,res)=>{
+  res.send('this is a root');
+});
+
 app.get('/todos/:id',(req,res)=>{
   var id = req.params.id;
   if(!ObjectID.isValid(id)){
